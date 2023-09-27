@@ -1,7 +1,7 @@
 #! /bin/bash
 
 
-redocly build-docs ./docs/openapi.yaml --output ./docs/redoc-static.html
+redocly build-docs ./docs/openapi.yaml --output ./docs/redoc-static.html 2>/dev/null
 
 if [ $? -ne 0 ]; then
   echo "Redoc not generated."
@@ -9,7 +9,7 @@ else
   echo "Redoc generated."
 fi
 
-python openapi-yaml-to-html.py < ./docs/openapi.yaml > ./docs/swagger-doc.html
+python openapi-yaml-to-html.py < ./docs/openapi.yaml > ./docs/swagger-doc.html 2>/dev/null
 
 if [ $? -ne 0 ]; then
   echo "Swagger not generated."

@@ -9,8 +9,9 @@
 - [Start offline](#start-offline)
   - [Dynamodb offline](#dynamodb-offline)
   - [Serverless offline](#serverless-offline)
-    - [NOTE: Once you call an endpoint you will be required to start the debugger which is a green button on the debugger menu see images below; ](#note-once-you-call-an-endpoint-you-will-be-required-to-start-the-debugger-which-is-a-green-button-on-the-debugger-menu-see-images-below-)
+    - [NOTE: Once you call an endpoint you will be required to start the debugger which is a green button on the debugger menu see images below;](#note-once-you-call-an-endpoint-you-will-be-required-to-start-the-debugger-which-is-a-green-button-on-the-debugger-menu-see-images-below)
   - [Debugging session](#debugging-session)
+  - [Documenatations](#documenatations)
 - [To update swagger docs](#to-update-swagger-docs)
 
 # TODO APP
@@ -40,7 +41,7 @@ import debugpy
 if os.environ.get("DEBUG", "false").lower() == "true":
   print("Waiting for debugger attach")
   if debugpy.is_client_connected() is False:
-      os.system("lsof -t -i tcp:5678 | xargs kill -15")
+      os.system("lsof -t -i tcp:5678 | xargs kill -15") # attempt to fix --reloadHandler issue
       debugpy.listen(5678)
       debugpy.wait_for_client()
       print("Connected to debugger")
@@ -87,11 +88,23 @@ DEBUG=true sls offline start -s dev -t
 
 Live swagger doc @ [swagger-doc](http://localhost:3000/dev/docs/swagger-doc.html) & Redoc doc @ [redoc](http://localhost:3000/dev/docs/redoc-static.html)
 
-### NOTE: Once you call an endpoint you will be required to start the debugger which is a green button on the debugger menu see images below; ![debugger button](./assets/debugger-ide.png)
+### NOTE: Once you call an endpoint you will be required to start the debugger which is a green button on the debugger menu see images below;
 
 ## Debugging session
 
-![live debugging session](./assets/debugger.png)
+<p float="left">
+  <img src="./assets/debugger.png" width="65%" />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="./assets/debugger-ide.png" width="22.7%" />
+</p>
+
+## Documenatations
+
+<p float="left">
+  <img src="assets/redocly.png" width="49%" />
+  &nbsp;
+  <img src="assets/swagger.png" width="49%" />
+</p>
 
 # To update swagger docs
 

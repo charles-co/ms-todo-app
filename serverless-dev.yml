@@ -33,14 +33,6 @@ custom:
     # Uncomment only if you already have a DynamoDB running locally
     # noStart: true
 
-  CUSTOM_STAGE:
-    prod: prod
-    staging: staging
-    dev: staging
-
-  environment:
-    CONFIG: ${ssm:/aws/reference/secretsmanager/ms/WowziPay}
-
 resources:
   # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-reference.html
 

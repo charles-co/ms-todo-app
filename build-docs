@@ -1,9 +1,0 @@
-#! /bin/bash
-
-if ["$STAGE" = "staging"]; then
-    redocly build-docs ./docs/openapi.yaml --output ./docs/redoc-static.html
-    python openapi-yaml-to-html.py < ./docs/openapi.yaml > ./docs/swagger-doc.html
-else
-    echo "Environment variable STAGE is not equal to stage."
-    echo "Skipping build-docs."
-fi

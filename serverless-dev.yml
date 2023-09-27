@@ -1,0 +1,62 @@
+app: 'todo-app'
+service: 'todo-app'
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  stage: dev
+
+  environment:
+    TODO_APP_DB: ms-todo-app
+    TODO_APP_DB_PK: id
+    TODO_APP_DB_SK: created_at
+
+plugins:
+  - serverless-dynamodb
+  - serverless-offline
+
+# Add custom configurations below;
+custom:
+  dynamodb:
+    # If you only want to use DynamoDB Local in some stages, declare them here
+    stages:
+      - dev
+    start:
+      host: 127.0.0.1
+      port: 8000
+      inMemory: true
+      heapInitial: 200m
+      heapMax: 1g
+      migrate: true
+      seed: true
+      convertEmptyValues: true
+    # Uncomment only if you already have a DynamoDB running locally
+    # noStart: true
+
+  CUSTOM_STAGE:
+    prod: prod
+    staging: staging
+    dev: staging
+
+  environment:
+    CONFIG: ${ssm:/aws/reference/secretsmanager/ms/WowziPay}
+
+resources:
+  # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-reference.html
+
+  Resources:
+    TodoAppDynamoDB:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.TODO_APP_DB}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        BillingMode: 'PROVISIONED'
+        DeletionProtectionEnabled: true

@@ -11,6 +11,7 @@
   - [Serverless offline](#serverless-offline)
     - [NOTE: Once you call an endpoint you will be required to start the debugger which is a green button on the debugger menu see images below; ](#note-once-you-call-an-endpoint-you-will-be-required-to-start-the-debugger-which-is-a-green-button-on-the-debugger-menu-see-images-below-)
   - [Debugging session](#debugging-session)
+- [To update swagger docs](#to-update-swagger-docs)
 
 # TODO APP
 
@@ -91,3 +92,9 @@ Live swagger doc @ [swagger-doc](http://localhost:3000/dev/docs/swagger-doc.html
 ## Debugging session
 
 ![live debugging session](./assets/debugger.png)
+
+# To update swagger docs
+
+```
+./build-docs
+```

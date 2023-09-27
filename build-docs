@@ -1,0 +1,18 @@
+#! /bin/bash
+
+
+redocly build-docs ./docs/openapi.yaml --output ./docs/redoc-static.html
+
+if [ $? -ne 0 ]; then
+  echo "Redoc not generated."
+else
+  echo "Redoc generated."
+fi
+
+python openapi-yaml-to-html.py < ./docs/openapi.yaml > ./docs/swagger-doc.html
+
+if [ $? -ne 0 ]; then
+  echo "Swagger not generated."
+else
+  echo "Swagger generated."
+fi

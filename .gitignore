@@ -283,4 +283,4 @@ dump.rdb
 # Serverless directories
 .serverless
 .dynamodb
-serverless-dev.yml
+package-lock.json

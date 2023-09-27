@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Swagger UI</title>
+    <link
+      href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Source+Code+Pro:300,600|Titillium+Web:400,600,700"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/3.43.0/swagger-ui.css"
+    />
+    <style>
+      html {
+        box-sizing: border-box;
+        overflow: -moz-scrollbars-vertical;
+        overflow-y: scroll;
+      }
+      *,
+      *:before,
+      *:after {
+        box-sizing: inherit;
+      }
+      body {
+        margin: 0;
+        background: #fafafa;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="swagger-ui"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/3.43.0/swagger-ui-bundle.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/3.43.0/swagger-ui-standalone-preset.js"></script>
+    <script>
+      window.onload = function () {
+        var spec = {
+          openapi: '3.0.3',
+          info: {
+            version: '0.0.1',
+            title: 'Todo App',
+            license: { name: 'MIT', url: 'https://google.com' },
+            contact: { email: 'oraegbucharlesc@gmail.com' },
+            description: '\nSimple Todo App\n',
+          },
+          servers: [
+            {
+              url: 'http://localhost:3000/dev',
+              description: 'Local development server',
+            },
+          ],
+          tags: [{ name: 'Todo', description: 'Everything about todo app' }],
+          paths: {
+            '/todos/{id}': {
+              get: {
+                summary: 'Get a todo',
+                description: 'Get a todo',
+                tags: ['Todo'],
+                operationId: 'getTodo',
+                parameters: [
+                  {
+                    name: 'id',
+                    in: 'path',
+                    required: true,
+                    description: 'Todo id',
+                    schema: { type: 'string' },
+                  },
+                ],
+                responses: {
+                  200: {
+                    description: 'A todo object',
+                    content: {
+                      'application/json': {
+                        schema: {
+                          $ref: '#/components/schemas/TodoResponseSchema',
+                        },
+                      },
+                    },
+                  },
+                  400: { $ref: '#/components/responses/BadRequest' },
+                  500: { $ref: '#/components/responses/ServerError' },
+                },
+              },
+              patch: {
+                summary: 'Update a todo',
+                description: 'Update a todo',
+                tags: ['Todo'],
+                operationId: 'updateTodo',
+                parameters: [
+                  {
+                    name: 'id',
+                    in: 'path',
+                    required: true,
+                    description: 'Todo id',
+                    schema: { type: 'string' },
+                  },
+                ],
+                requestBody: {
+                  description: 'Todo object fields that needs to be updated',
+                  required: true,
+                  content: {
+                    'application/json': {
+                      schema: {
+                        $ref: '#/components/schemas/TodoUpdateRequestSchema',
+                      },
+                    },
+                  },
+                },
+                responses: {
+                  200: {
+                    description: 'A todo object',
+                    content: {
+                      'application/json': {
+                        schema: {
+                          $ref: '#/components/schemas/TodoResponseSchema',
+                        },
+                      },
+                    },
+                  },
+                  400: { $ref: '#/components/responses/BadRequest' },
+                  500: { $ref: '#/components/responses/ServerError' },
+                },
+              },
+              delete: {
+                summary: 'Delete a todo',
+                description: 'Delete a todo',
+                tags: ['Todo'],
+                operationId: 'deleteTodo',
+                parameters: [
+                  {
+                    name: 'id',
+                    in: 'path',
+                    required: true,
+                    description: 'Todo id',
+                    schema: { type: 'string' },
+                  },
+                ],
+                responses: {
+                  204: { description: 'No content' },
+                  400: { $ref: '#/components/responses/BadRequest' },
+                  500: { $ref: '#/components/responses/ServerError' },
+                },
+              },
+            },
+            '/todos': {
+              get: {
+                summary: 'Get all todos',
+                description: 'Get all todos',
+                tags: ['Todo'],
+                operationId: 'getAllTodos',
+                parameters: [
+                  {
+                    name: 'isCompleted',
+                    in: 'query',
+                    required: false,
+                    description: 'Filter by isCompleted',
+                    schema: { type: 'boolean' },
+                  },
+                  {
+                    name: 'isPinned',
+                    in: 'query',
+                    required: false,
+                    description: 'Filter by isPinned',
+                    schema: { type: 'boolean' },
+                  },
+                ],
+                responses: {
+                  200: {
+                    description: 'A list of todo objects',
+                    content: {
+                      'application/json': {
+                        schema: {
+                          type: 'array',
+                          items: {
+                            $ref: '#/components/schemas/TodoResponseSchema',
+                          },
+                        },
+                      },
+                    },
+                  },
+                  400: { $ref: '#/components/responses/BadRequest' },
+                  500: { $ref: '#/components/responses/ServerError' },
+                },
+              },
+              post: {
+                summary: 'Create a todo',
+                description: 'Create a todo',
+                tags: ['Todo'],
+                operationId: 'createTodo',
+                requestBody: {
+                  description: 'Todo object that needs to be created',
+                  required: true,
+                  content: {
+                    'application/json': {
+                      schema: {
+                        $ref: '#/components/schemas/TodoCreateRequestSchema',
+                      },
+                    },
+                  },
+                },
+                responses: {
+                  201: {
+                    description: 'A todo object',
+                    content: {
+                      'application/json': {
+                        schema: {
+                          $ref: '#/components/schemas/TodoResponseSchema',
+                        },
+                      },
+                    },
+                  },
+                  400: { $ref: '#/components/responses/BadRequest' },
+                  500: { $ref: '#/components/responses/ServerError' },
+                },
+              },
+            },
+          },
+          components: {
+            schemas: {
+              TodoResponseSchema: {
+                title: 'TodoResponseSchema',
+                type: 'object',
+                properties: {
+                  id: { title: 'Id', type: 'string' },
+                  title: { title: 'Title', type: 'string' },
+                  description: { title: 'Description', type: 'string' },
+                  createdA: { title: 'Created At', type: 'number' },
+                  updatedAt: { title: 'Updated At', type: 'number' },
+                  isCompleted: { title: 'Completed', type: 'boolean' },
+                  isPinned: { title: 'Pinned', type: 'boolean' },
+                },
+              },
+              TodoCreateRequestSchema: {
+                title: 'TodoCreateRequestSchema',
+                type: 'object',
+                properties: {
+                  title: { title: 'Title', type: 'string' },
+                  description: { title: 'Description', type: 'string' },
+                  isCompleted: { title: 'Completed', type: 'boolean' },
+                  isPinned: { title: 'Pinned', type: 'boolean' },
+                },
+                required: ['title', 'description'],
+              },
+              TodoUpdateRequestSchema: {
+                title: 'TodoUpdateRequestSchema',
+                type: 'object',
+                properties: {
+                  title: { title: 'Title', type: 'string' },
+                  description: { title: 'Description', type: 'string' },
+                  isCompleted: { title: 'Completed', type: 'boolean' },
+                  isPinned: { title: 'Pinned', type: 'boolean' },
+                },
+              },
+              ErrorResponseSchema: {
+                title: 'ErrorResponseSchema',
+                type: 'object',
+                properties: {
+                  data: { title: 'Data', type: 'object' },
+                  message: { title: 'Message', type: 'string' },
+                },
+              },
+            },
+            responses: {
+              BadRequest: {
+                description: '400 response',
+                content: {
+                  'application/json': {
+                    schema: {
+                      $ref: '#/components/schemas/ErrorResponseSchema',
+                    },
+                  },
+                },
+              },
+              Forbidden: {
+                description: '403 response',
+                content: {
+                  'application/json': {
+                    schema: {
+                      title: 'Forbidden',
+                      type: 'object',
+                      properties: {
+                        message: { title: 'Message', type: 'string' },
+                      },
+                    },
+                  },
+                },
+              },
+              ServerError: {
+                description: '500 response',
+                content: {
+                  'application/json': {
+                    schema: {
+                      title: 'ServerError',
+                      type: 'object',
+                      properties: {
+                        message: { title: 'Message', type: 'string' },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        };
+        // Build a system
+        const ui = SwaggerUIBundle({
+          spec: spec,
+          dom_id: '#swagger-ui',
+          deepLinking: true,
+          presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+          plugins: [SwaggerUIBundle.plugins.DownloadUrl],
+          layout: 'StandaloneLayout',
+        });
+        window.ui = ui;
+      };
+    </script>
+  </body>
+</html>

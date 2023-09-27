@@ -1,0 +1,8 @@
+{
+  "devDependencies": {
+    "@redocly/cli": "^1.2.0",
+    "serverless": "^3.35.2",
+    "serverless-dynamodb": "^0.2.43",
+    "serverless-offline": "^13.1.1"
+  }
+}

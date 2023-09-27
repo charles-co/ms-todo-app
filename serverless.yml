@@ -1,0 +1,134 @@
+app: "todo-app"
+service: "todo-app"
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  stage: ${opt:stage}
+  runtime: python3.11
+  timeout: 30
+  region: us-east-1
+  memorySize: 512
+  architecture: arm64
+  environment:
+    STAGE: ${self:provider.stage}
+
+    TODO_APP_DB: ms-todo-app
+    TODO_APP_DB_PK: id
+    TODO_APP_DB_SK: created_at
+
+# Upldoad just essential files to AWS Lambda
+package:
+  patterns:
+    - "!./**"
+    - src/**
+    - "!src/**/__pycache__/**"
+    - "docs/**"
+
+plugins:
+  - serverless-offline
+
+# Add functions
+functions:
+  # Example function with authorizer
+  todo_app_gateway_handler:
+    handler: src.main.todo_app_gateway_handler
+    description: Todo app system gateway for different funtions
+    events:
+      - http:
+          path: /docs/{path+} # Matches every path under /docs
+          method: get
+          cors:
+            origin: "*"
+            headers: "*"
+
+      - http:
+          path: "/{path+}" # Matches every path under /
+          method: ANY
+          cors:
+            origin: "*"
+            headers: "*"
+
+
+resources:
+  # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-reference.html
+
+  Conditions:
+    IsProd:
+      Fn::Equals:
+        - ${self:provider.stage}
+        - prod
+
+  Resources:
+    GatewayResponseDefault4XX:
+      Type: "AWS::ApiGateway::GatewayResponse"
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: DEFAULT_4XX
+        RestApiId:
+          Ref: "ApiGatewayRestApi"
+
+    GatewayResponseDefault5XX:
+      Type: "AWS::ApiGateway::GatewayResponse"
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: DEFAULT_5XX
+        RestApiId:
+          Ref: "ApiGatewayRestApi"
+
+    DenyFailureGatewayResponse:
+      Type: "AWS::ApiGateway::GatewayResponse"
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseTemplates:
+          #https://stackoverflow.com/a/49806967/10212963
+          application/json: |
+            {
+              "message": "$context.authorizer.message",
+            }
+        ResponseType: ACCESS_DENIED
+        RestApiId:
+          Ref: "ApiGatewayRestApi"
+        StatusCode: "403"
+
+    AuthorizerFailureGatewayResponse:
+      Type: "AWS::ApiGateway::GatewayResponse"
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseTemplates:
+          application/json: |
+            {
+              "message": "Authorization error",
+              "data": {}
+            }
+        ResponseType: AUTHORIZER_FAILURE
+        RestApiId:
+          Ref: "ApiGatewayRestApi"
+        StatusCode: "503"
+
+    TodoAppDynamoDB:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.TODO_APP_DB}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          Fn::If:
+            - IsProd
+            - Ref: "AWS::NoValue"
+            - { ReadCapacityUnits: 1, WriteCapacityUnits: 1 }
+        BillingMode:
+          Fn::If: [IsProd, "PAY_PER_REQUEST", "PROVISIONED"]
+        DeletionProtectionEnabled: true

@@ -1,0 +1,120 @@
+#! /bin/bash
+
+CUR_DIR=$(pwd)
+REPO_NAME="ms-ledger-system"
+
+declare -r package="Ms Pipeline Deploy"
+declare -r region="us-east-1"
+declare -r pathToTemplate="$CUR_DIR/template.yml"
+declare -r file="file://$pathToTemplate"
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -h|--help)
+      echo "$package - Deploys the code pipeline for the application"
+      echo " "
+      echo "$package [options] application [arguments]"
+      echo " "
+      echo "options:"
+      echo "-h, --help                show brief help"
+      echo "-s, --stack-name=NAME     optional: specify a stack name to use e.g. <name-of-branch>-pipeline"
+      echo "-r, --repo-name=NAME      required: specify repository name"
+      # echo "-r, --region=REGION       specify a region to use defaults to us-east-1"
+      exit 0
+      ;;
+    -s)
+      shift
+      if [[ $# -gt 0 ]]; then
+        STACK_NAME=$1
+      else
+        echo "no stack name specified"
+        exit 1
+      fi
+      shift
+      ;;
+    --stack-name*)
+      shift
+      if [[ $# -gt 0 ]]; then
+        STACK_NAME=`echo $1 | sed -e 's/^[^=]*=//g'`
+      else
+        echo "no stack name specified"
+        exit 1
+      fi
+      shift
+      ;;
+    -r)
+      shift
+      if [[ $# -gt 0 ]]; then
+        REPO_NAME=$1
+      else
+        echo "no repository name specified"
+        exit 1
+      fi
+      shift
+      ;;
+    --repo-name*)
+      shift
+      if [[ $# -gt 0 ]]; then
+        REPO_NAME=`echo $1 | sed -e 's/^[^=]*=//g'`
+      else
+        echo "no repository name specified"
+        exit 1
+      fi
+      shift
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+handleResponse() {
+  if [[ $1 -eq 0 ]]
+  then
+    echo "Done"
+  else
+    echo "Failed!"
+    echo "Error: $2"
+    echo "Exiting..."
+    exit 1
+  fi
+}
+
+if [[ -z "$REPO_NAME" ]]
+then
+  handleResponse 1 "Repository name not set"
+  exit 1
+fi
+# Check if stack name is set
+if [[ -z "$STACK_NAME" ]]
+then
+  STACK_NAME=$REPO_NAME-pipeline
+fi
+
+validateTemplate() {
+  echo "Validating template..."
+  output=$(aws cloudformation validate-template --template-body $file 2>&1)
+  exitCode=$?
+
+  handleResponse $exitCode "$output"
+}
+
+deployPipelines() {
+  echo "Deploying code pipelines..."
+  output=$(aws cloudformation deploy --template-file $pathToTemplate --stack-name $STACK_NAME  --capabilities CAPABILITY_NAMED_IAM --region $region --parameter-overrides RepositoryName=$REPO_NAME 2>&1)
+  local -i exitCode=$?
+  handleResponse $exitCode "$output"
+}
+
+deploy() {
+  echo "Starting pipeline deployment..."
+  validateTemplate
+  deployPipelines
+  echo "Success!, push some code to your repo main branch to trigger the pipeline."
+}
+
+main() {
+  deploy
+}
+
+main "$@"

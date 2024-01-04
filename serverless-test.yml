@@ -4,7 +4,7 @@ frameworkVersion: '3'
 
 provider:
   name: aws
-  stage: dev
+  stage: test
   runtime: python3.11
   timeout: 30
   region: us-east-1
@@ -33,7 +33,7 @@ custom:
   dynamodb:
     # If you only want to use DynamoDB Local in some stages, declare them here
     stages:
-      - dev
+      - test
     start:
       host: 127.0.0.1
       port: 8001
@@ -48,7 +48,6 @@ custom:
 
 # Add functions
 functions:
-  # Example function with authorizer
   todo_app_gateway_handler:
     handler: src.main.todo_app_gateway_handler
     description: Todo app system gateway for different funtions

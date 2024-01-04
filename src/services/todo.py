@@ -40,7 +40,7 @@ def get_todos(event: dict[str, Any], context: object):
 
     if _filter:
         kwargs["FilterExpression"] = reduce(lambda x, y: x & y, _filter)
-    data = TodoAppRepository.get(pk=None, **kwargs)
+    data = TodoAppRepository.filter(**kwargs)
 
     return ResponseSchema(
         status_code=HTTPStatus.OK, body=DataSchema[TodoResponseSchema](message=HTTPStatus.OK.description, data=data)

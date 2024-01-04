@@ -12,11 +12,11 @@ class DynamoDB:
     } | (
         {
             "region_name": "localhost",
-            "endpoint_url": "http://localhost:8000",
-            "aws_access_key_id": "dev",
-            "aws_secret_access_key": "dev",
+            "endpoint_url": f"http://localhost:{'8000' if settings.STAGE == 'dev' else '8001'}",
+            "aws_access_key_id": "test",
+            "aws_secret_access_key": "test",
         }
-        if settings.STAGE == "dev"
+        if settings.STAGE in ["dev", "test"]
         else {}
     )
 
@@ -45,17 +45,11 @@ class DynamoDB:
         if resp["ResponseMetadata"]["HTTPStatusCode"] != 200:
             raise ConnectionRefusedError
 
-        mappings = {
-            settings.TODO_APP_DB: {
-                "KeyConditionExpression": f"{settings.TODO_APP_DB_PK} = :pk",
-                "ExpressionAttributeValues": {":pk": item[settings.TODO_APP_DB_PK]},
-            }
-        }
-        res = self.query(
-            key_condition_expression=mappings[self._table.name]["KeyConditionExpression"],
-            ExpressionAttributeValues=mappings[self._table.name]["ExpressionAttributeValues"],
-        ).get("Items", [])
-        return [{}, res[0]][len(res) > 0]
+        match self._table.name:
+            case settings.TODO_APP_DB:
+                return self.get_item(key={settings.TODO_APP_DB_PK: item[settings.TODO_APP_DB_PK]})
+            case _:
+                return {}
 
     def update_item(self, key, **kwargs):
         resp = self._table.update_item(

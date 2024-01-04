@@ -14,12 +14,12 @@ settings = get_settings()
 
 def todo_app_gateway_handler(event: dict[str, Any], context: object):
     router = {
-        r"^(?:\/staging|dev|prod)?\/todos\/(?P<id>[a-zA-Z0-9]+)$": {
+        r"^(?:\/staging|test|dev|prod)?\/todos\/(?P<id>[a-zA-Z0-9]+)$": {
             HTTPMethod.GET: todo.get_todo,
             HTTPMethod.DELETE: todo.delete_todo,
             HTTPMethod.PATCH: todo.update_todo_partial,
         },
-        r"^(?:\/staging|dev|prod)?\/todos(?:\?[^/]+)?$": {
+        r"^(?:\/staging|test|dev|prod)?\/todos(?:\?[^/]+)?$": {
             HTTPMethod.GET: todo.get_todos,
             HTTPMethod.POST: todo.create_todo,
         },
@@ -27,7 +27,7 @@ def todo_app_gateway_handler(event: dict[str, Any], context: object):
 
     # Add docs routes if not in production
     router |= {
-        r"^(?:\/staging|dev)?\/docs\/(?P<filename>redoc-static.html|swagger-doc.html)(?:#.*)?$": {
+        r"^(?:\/staging|test|dev)?\/docs\/(?P<filename>redoc-static.html|swagger-doc.html)(?:#.*)?$": {
             HTTPMethod.GET: index.get_doc,
         },
     }
@@ -51,4 +51,4 @@ def todo_app_gateway_handler(event: dict[str, Any], context: object):
 
     return ResponseSchema(
         status_code=HTTPStatus.NOT_FOUND, body=DataSchema[dict](message=HTTPStatus.NOT_FOUND.description)
-    ).model_dump(by_alias=True)
+    ).model_dump_json(by_alias=True)

@@ -2,6 +2,7 @@ import datetime
 from decimal import Decimal
 from typing import Any
 
+from boto3.dynamodb.conditions import Key
 from pydantic import validate_call
 
 from src.config.settings import get_settings
@@ -32,9 +33,7 @@ class TodoAppRepository:
     def exists(cls, *, pk: str, **kwargs) -> bool:
         if (
             DynamoDB(table_name=settings.TODO_APP_DB).count(
-                KeyConditionExpression="#pk_proxy = :pk",
-                ExpressionAttributeValues={":pk": pk},
-                ExpressionAttributeNames={"#pk_proxy": settings.TODO_APP_DB_PK},
+                KeyConditionExpression=Key(settings.TODO_APP_DB_PK).eq(pk),
                 **kwargs,
             )
         ) >= 1:
@@ -42,7 +41,7 @@ class TodoAppRepository:
         return False
 
     @classmethod
-    def get(cls, *, pk: str = None, **kwargs) -> dict[str, Any]:
+    def get(cls, *, pk: str, **kwargs) -> dict[str, Any]:
         """Get todo item by primary key.
 
         Args:
@@ -51,19 +50,24 @@ class TodoAppRepository:
         Returns:
             dict[str, Any]: Return todo object if found, otherwise None
         """
-        if pk:
-            return DynamoDB(table_name=settings.TODO_APP_DB).get_item(
-                key={settings.TODO_APP_DB_PK: pk},
+        item = DynamoDB(table_name=settings.TODO_APP_DB).get_item(
+            key={settings.TODO_APP_DB_PK: pk},
+            **kwargs,
+        )
+
+        return item
+
+    @classmethod
+    def filter(cls, **kwargs) -> dict[str, Any]:
+        """Get filtered todos"""
+        items = (
+            DynamoDB(table_name=settings.TODO_APP_DB)
+            .scan(
                 **kwargs,
             )
-        else:
-            return (
-                DynamoDB(table_name=settings.TODO_APP_DB)
-                .scan(
-                    **kwargs,
-                )
-                .get("Items")
-            )
+            .get("Items")
+        )
+        return items
 
     @classmethod
     @validate_call
@@ -91,11 +95,6 @@ class TodoAppRepository:
         expression_attribute_names["#updated_at_proxy"] = "updated_at"
 
         for key, value in data.items():
-            if "." in key:
-                arr = key.rpartition(".")
-                key = arr[-1]
-                update_expression += f"{''.join(arr[:-2])}"
-
             expression_attribute_names[f"#{key}_proxy"] = key
             update_expression += f"#{key}_proxy = :{key},"
             expression_attribute_values[f":{key}"] = value

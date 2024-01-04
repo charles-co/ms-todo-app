@@ -13,6 +13,7 @@ python_files = [
     "tests.py",
     "test_*.py",
 ]
+log_cli = true
 
 # ==== black ====
 [tool.black]

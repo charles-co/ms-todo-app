@@ -15,7 +15,7 @@ provider:
 
     TODO_APP_DB: ms-todo-app
     TODO_APP_DB_PK: id
-    TODO_APP_DB_SK: created_at
+    TODO_APP_DB_SK: updated_at
 
 # Upldoad just essential files to AWS Lambda
 package:
@@ -30,7 +30,6 @@ plugins:
 
 # Add functions
 functions:
-  # Example function with authorizer
   todo_app_gateway_handler:
     handler: src.main.todo_app_gateway_handler
     description: Todo app system gateway for different funtions
@@ -48,7 +47,6 @@ functions:
           cors:
             origin: "*"
             headers: "*"
-
 
 resources:
   # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-reference.html
